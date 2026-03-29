@@ -34,7 +34,7 @@ Add the output as `ENCRYPTION_KEY` in your `.env` and Railway Variables.
 cp .env.example .env
 # Fill in TELEGRAM_BOT_TOKEN, ADMIN_USER_ID, and ENCRYPTION_KEY
 uv sync
-uv run --env-file .env python shortlink_bot.py
+uv run --env-file .env python bot.py
 ```
 
 ### 5. Deploy to Railway

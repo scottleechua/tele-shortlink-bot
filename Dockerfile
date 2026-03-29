@@ -12,4 +12,4 @@ COPY . .
 # /data is where Railway mounts the persistent volume
 RUN mkdir -p /data
 
-CMD ["uv", "run", "python", "shortlink_bot.py"]
+CMD ["uv", "run", "python", "bot.py"]
