@@ -23,7 +23,7 @@ class Episode:
 
     @property
     def guid_b64(self) -> str:
-        return base64.b64encode(self.guid.encode()).decode()
+        return base64.b64encode(self.guid.encode()).decode().rstrip("=")
 
 
 def _parse_int(value: str | None) -> int | None:
