@@ -221,6 +221,14 @@ def update_podcast_name(podcast_id: int, name: str):
         )
 
 
+def update_podcast_domain(podcast_id: int, domain_id: int):
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE podcasts SET domain_id = ? WHERE id = ?",
+            (domain_id, podcast_id),
+        )
+
+
 def remove_podcast(podcast_id: int):
     with get_conn() as conn:
         conn.execute("DELETE FROM podcasts WHERE id = ?", (podcast_id,))

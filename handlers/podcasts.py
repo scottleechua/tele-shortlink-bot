@@ -23,7 +23,8 @@ _MENU_TEXTS = filters.Text(["🔗 New link", "☰ Menu"])
     EDIT_PICK,
     EDIT_ACTIONS,
     EDIT_NAME,
-) = range(6)
+    EDIT_DOMAIN_PICK,
+) = range(7)
 
 
 def _menu_keyboard(has_podcasts: bool = True):
@@ -201,6 +202,7 @@ async def edit_pick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["editing_podcast_id"] = podcast_id
     rows = [
         [InlineKeyboardButton("✏️ Edit nickname", callback_data=f"editpodact:rename:{podcast_id}")],
+        [InlineKeyboardButton("🌐 Edit linked domain", callback_data=f"editpodact:domain:{podcast_id}")],
         [InlineKeyboardButton("❌ Remove podcast", callback_data=f"editpodact:remove:{podcast_id}")],
         [InlineKeyboardButton("↩ Back", callback_data="editpodact:back")],
     ]
@@ -241,12 +243,59 @@ async def edit_actions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         )
         return EDIT_NAME
 
+    if action == "domain":
+        context.user_data["editing_podcast_id"] = podcast_id
+        domains = db.list_domains()
+        rows = [
+            [InlineKeyboardButton(d['nickname'], callback_data=f"editpoddom:{d['id']}")]
+            for d in domains
+        ]
+        rows.append([InlineKeyboardButton("↩ Back", callback_data="editpoddom:back")])
+        await query.edit_message_text(
+            f"Pick the domain for *{podcast['name']}*:",
+            reply_markup=InlineKeyboardMarkup(rows),
+            parse_mode="Markdown",
+        )
+        return EDIT_DOMAIN_PICK
+
     if action == "remove":
         db.remove_podcast(podcast_id)
         await query.edit_message_text(f"✅ Removed *{podcast['name']}*.", parse_mode="Markdown")
         return ConversationHandler.END
 
     return EDIT_ACTIONS
+
+
+async def edit_domain_pick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "editpoddom:back":
+        podcast_id = context.user_data["editing_podcast_id"]
+        podcast = db.get_podcast(podcast_id)
+        rows = [
+            [InlineKeyboardButton("✏️ Edit nickname", callback_data=f"editpodact:rename:{podcast_id}")],
+            [InlineKeyboardButton("🌐 Edit linked domain", callback_data=f"editpodact:domain:{podcast_id}")],
+            [InlineKeyboardButton("❌ Remove podcast", callback_data=f"editpodact:remove:{podcast_id}")],
+            [InlineKeyboardButton("↩ Back", callback_data="editpodact:back")],
+        ]
+        await query.edit_message_text(
+            f"*{podcast['name']}*",
+            reply_markup=InlineKeyboardMarkup(rows),
+            parse_mode="Markdown",
+        )
+        return EDIT_ACTIONS
+
+    domain_id = int(query.data.split(":")[1])
+    podcast_id = context.user_data["editing_podcast_id"]
+    db.update_podcast_domain(podcast_id, domain_id)
+    domain = db.get_domain(domain_id)
+    podcast = db.get_podcast(podcast_id)
+    await query.edit_message_text(
+        f"✅ *{podcast['name']}* now linked to `{domain['hostname']}`.",
+        parse_mode="Markdown",
+    )
+    return ConversationHandler.END
 
 
 async def edit_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -276,6 +325,7 @@ def podcasts_handler() -> ConversationHandler:
             EDIT_PICK: [CallbackQueryHandler(edit_pick, pattern="^editpod:")],
             EDIT_ACTIONS: [CallbackQueryHandler(edit_actions, pattern="^editpodact:")],
             EDIT_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND & ~_MENU_TEXTS, edit_name)],
+            EDIT_DOMAIN_PICK: [CallbackQueryHandler(edit_domain_pick, pattern="^editpoddom:")],
         },
         fallbacks=[
             CommandHandler("cancel", cancel),
