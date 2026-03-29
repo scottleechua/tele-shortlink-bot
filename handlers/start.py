@@ -293,7 +293,7 @@ async def ask_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
 
     rows = [
-        [InlineKeyboardButton(f"{d['nickname']} ({d['hostname']})", callback_data=f"dom:{d['id']}")]
+        [InlineKeyboardButton(d['nickname'], callback_data=f"dom:{d['id']}")]
         for d in domains
     ]
     rows.append([InlineKeyboardButton("❌ Cancel", callback_data="cancel")])

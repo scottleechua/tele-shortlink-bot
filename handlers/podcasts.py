@@ -149,7 +149,7 @@ async def add_apple_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     domains = db.list_domains()
     rows = [
-        [InlineKeyboardButton(f"{d['nickname']} ({d['hostname']})", callback_data=f"poddom:{d['id']}")]
+        [InlineKeyboardButton(d['nickname'], callback_data=f"poddom:{d['id']}")]
         for d in domains
     ]
     rows.append([InlineKeyboardButton("❌ Cancel", callback_data="poddom:cancel")])

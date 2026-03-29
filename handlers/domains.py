@@ -69,7 +69,7 @@ async def domains_entry(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             pass
     domains = db.list_domains()
     if domains:
-        lines = [f"• {d['nickname']} — `{d['hostname']}`" for d in domains]
+        lines = [f"• {d['nickname']} — `{d['hostname']}`" if d['nickname'] != d['hostname'] else f"• `{d['hostname']}`" for d in domains]
         text = "Your domains:\n\n" + "\n".join(lines)
     else:
         text = "No domains saved yet."
@@ -105,7 +105,7 @@ async def domains_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             # Skip domain picker if only one domain
             return await _sync_and_show_links(query, domains[0])
         rows = [
-            [InlineKeyboardButton(f"{d['nickname']} ({d['hostname']})", callback_data=f"vl_dom:{d['id']}")]
+            [InlineKeyboardButton(d['nickname'], callback_data=f"vl_dom:{d['id']}")]
             for d in domains
         ]
         rows.append([InlineKeyboardButton("↩ Back", callback_data="vl_dom:back")])
@@ -118,7 +118,7 @@ async def domains_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             await query.edit_message_text("No domains to edit.", reply_markup=_menu_keyboard())
             return DOMAINS_MENU
         rows = [
-            [InlineKeyboardButton(f"{d['nickname']} ({d['hostname']})", callback_data=f"editdom:{d['id']}")]
+            [InlineKeyboardButton(d['nickname'], callback_data=f"editdom:{d['id']}")]
             for d in domains
         ]
         rows.append([InlineKeyboardButton("↩ Back", callback_data="editdom:back")])
@@ -131,7 +131,7 @@ async def domains_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             await query.edit_message_text("No domains to remove.", reply_markup=_menu_keyboard(False))
             return DOMAINS_MENU
         rows = [
-            [InlineKeyboardButton(f"{d['nickname']} ({d['hostname']})", callback_data=f"rmdom:{d['id']}")]
+            [InlineKeyboardButton(d['nickname'], callback_data=f"rmdom:{d['id']}")]
             for d in domains
         ]
         rows.append([InlineKeyboardButton("↩ Back", callback_data="rmdom:back")])
@@ -231,7 +231,7 @@ async def edit_pick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if query.data == "editdom:back":
         domains = db.list_domains()
         if domains:
-            lines = [f"• {d['nickname']} — `{d['hostname']}`" for d in domains]
+            lines = [f"• {d['nickname']} — `{d['hostname']}`" if d['nickname'] != d['hostname'] else f"• `{d['hostname']}`" for d in domains]
             text = "Your domains:\n\n" + "\n".join(lines)
         else:
             text = "No domains saved yet."
@@ -266,7 +266,7 @@ async def remove_pick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     if query.data == "rmdom:back":
         domains = db.list_domains()
-        lines = [f"• {d['nickname']} — `{d['hostname']}`" for d in domains] if domains else ["No domains saved yet."]
+        lines = [f"• {d['nickname']} — `{d['hostname']}`" if d['nickname'] != d['hostname'] else f"• `{d['hostname']}`" for d in domains] if domains else ["No domains saved yet."]
         text = "\n".join(lines)
         await query.edit_message_text(text, reply_markup=_menu_keyboard(bool(domains)), parse_mode="Markdown")
         return DOMAINS_MENU
@@ -332,7 +332,7 @@ async def view_links_pick(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if query.data == "vl_dom:back":
         domains = db.list_domains()
         if domains:
-            lines = [f"• {d['nickname']} — `{d['hostname']}`" for d in domains]
+            lines = [f"• {d['nickname']} — `{d['hostname']}`" if d['nickname'] != d['hostname'] else f"• `{d['hostname']}`" for d in domains]
             text = "Your domains:\n\n" + "\n".join(lines)
         else:
             text = "No domains saved yet."
@@ -354,7 +354,7 @@ async def view_links(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if query.data == "vl:back":
         domains = db.list_domains()
         if domains:
-            lines = [f"• {d['nickname']} — `{d['hostname']}`" for d in domains]
+            lines = [f"• {d['nickname']} — `{d['hostname']}`" if d['nickname'] != d['hostname'] else f"• `{d['hostname']}`" for d in domains]
             text = "Your domains:\n\n" + "\n".join(lines)
         else:
             text = "No domains saved yet."
