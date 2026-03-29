@@ -1,5 +1,10 @@
 import logging
 import os
+import warnings
+
+from telegram.warnings import PTBUserWarning
+
+warnings.filterwarnings("ignore", message=".*per_message=False.*", category=PTBUserWarning)
 
 from telegram.ext import (
     Application,
